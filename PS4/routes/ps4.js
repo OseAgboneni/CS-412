@@ -37,45 +37,27 @@ router.route('/')
         let match = await existsAsync(city);
         if (match) {
             let cityData = await getAsync(city);
+            cityData.fromCache = true;
+            res.send(JSON.stringify(cityData));
+        } //Ask to go over this tomorrow
+        else {
+            let result = await fetch(CONFIG.url + '?q=' + city + '&units=metric&appid=' + CONFIG.key);
+            let weather = await result.json()
+
+            let resObj = {
+                fromCache: false,
+                title: 'Today in Weather!',
+                city: weather.name,
+                temperature: weather.main.temp
+            };
+
+            client.set(city, resObj, (err, response) =>{
+                res.send(JSON.stringify(resObj));
+            });
+            let match1 = await existsAsync(city);
+            console.log(match1);
+            //client.expire(city, 30);
         }
-        client.exists(city, (err, response) => { //looks for key
-            if(err){ throw new Error(err) }
-            if(response == 1) { //key exists, grab value
-                client.get(city, (err, response) => {
-                    response.fromCache = true;
-                    res.send(JSON.stringify(response + ' already cached'));
-                    console.table(response);
-                })
-            } else { //key doesn't exist; create it and add to cache for 30 seconds
-                let result = await fetch(CONFIG.url + '?q=' + city + '&units=metric&appid=' + CONFIG.key);
-                let weather = await result.json()
-
-                let resObj = {
-                    fromCache: false,
-                    title: 'Today in Weather!',
-                    city: weather.name,
-                    temperature: weather.main.temp
-                };
-
-                client.set(city, resObj, (err, response) =>{
-                    res.send(JSON.stringify(resObj));
-                });
-                client.expire(city, 30);
-            }
-        })
-
-        // let result = await fetch(CONFIG.url + '?q=' + city + '&units=metric&appid=' + CONFIG.key);
-        // let weather = await result.json()
-        //
-        // const resValue = weather.main.temp;
-        // let resObj = {
-        //     fromCache: true,
-        //     title: 'Today in Weather!',
-        //     city: weather.name,
-        //     temperature: weather.main.temp
-        // };
-
-        //res.render('wx', resObj);
     })
 
 module.exports = router;
