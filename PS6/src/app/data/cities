@@ -1,0 +1,4 @@
+export class CITY {
+  name: string;
+  temperature: number;
+}

@@ -1,0 +1,12 @@
+<p>list works!!!</p>
+
+<input name="testInput" type="text">
+<br>
+<ul *ngFor="let city of cities">
+  <li (click)="showTemperature(city.name)">{{city.name}}</li>
+
+</ul>
+
+<div name="details" *ngIf="selectedCity">
+  {{selectedCity.temperature}}
+</div>
